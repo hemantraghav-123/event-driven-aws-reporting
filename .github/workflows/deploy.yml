@@ -27,35 +27,23 @@ jobs:
           --stack-name event-driven-pipeline-stack \
           --capabilities CAPABILITY_NAMED_IAM
 
-    - name: Package Ingest Lambda
+    - name: Package & Deploy Ingest Lambda
       run: |
-        cd lambda/ingest_lambda
-        zip function.zip lambda_function.py
-
-    - name: Deploy Ingest Lambda
-      run: |
+        zip lambda/ingest_lambda/function.zip lambda/ingest_lambda/lambda_function.py
         aws lambda update-function-code \
           --function-name ingest-data-lambda \
           --zip-file fileb://lambda/ingest_lambda/function.zip
 
-    - name: Package Process Lambda
+    - name: Package & Deploy Process Lambda
       run: |
-        cd lambda/process_lambda
-        zip function.zip lambda_function.py
-
-    - name: Deploy Process Lambda
-      run: |
+        zip lambda/process_lambda/function.zip lambda/process_lambda/lambda_function.py
         aws lambda update-function-code \
           --function-name process-data-lambda \
           --zip-file fileb://lambda/process_lambda/function.zip
 
-    - name: Package Report Lambda
+    - name: Package & Deploy Report Lambda
       run: |
-        cd lambda/report_lambda
-        zip function.zip lambda_function.py
-
-    - name: Deploy Report Lambda
-      run: |
+        zip lambda/report_lambda/function.zip lambda/report_lambda/lambda_function.py
         aws lambda update-function-code \
           --function-name report-data-lambda \
           --zip-file fileb://lambda/report_lambda/function.zip
