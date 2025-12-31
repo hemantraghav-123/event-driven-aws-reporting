@@ -1,0 +1,61 @@
+name: Deploy Event Driven AWS Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-north-1
+
+    - name: Deploy CloudFormation Stack
+      run: |
+        aws cloudformation deploy \
+          --template-file cloudformation/main-stack.yaml \
+          --stack-name event-driven-pipeline-stack \
+          --capabilities CAPABILITY_NAMED_IAM
+
+    - name: Package Ingest Lambda
+      run: |
+        cd lambda/ingest_lambda
+        zip function.zip lambda_function.py
+
+    - name: Deploy Ingest Lambda
+      run: |
+        aws lambda update-function-code \
+          --function-name ingest-data-lambda \
+          --zip-file fileb://lambda/ingest_lambda/function.zip
+
+    - name: Package Process Lambda
+      run: |
+        cd lambda/process_lambda
+        zip function.zip lambda_function.py
+
+    - name: Deploy Process Lambda
+      run: |
+        aws lambda update-function-code \
+          --function-name process-data-lambda \
+          --zip-file fileb://lambda/process_lambda/function.zip
+
+    - name: Package Report Lambda
+      run: |
+        cd lambda/report_lambda
+        zip function.zip lambda_function.py
+
+    - name: Deploy Report Lambda
+      run: |
+        aws lambda update-function-code \
+          --function-name report-data-lambda \
+          --zip-file fileb://lambda/report_lambda/function.zip
